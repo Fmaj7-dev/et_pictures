@@ -84,7 +84,7 @@ def processFile(filePath):
         #cv2.imshow("image", crop_img)
         ##cv2.imshow("Image", rotated)
         #cv2.waitKey(0)
-        cv2.imwrite("images/image"+str(seq)+".jpg", crop_img)
+        cv2.imwrite("../images/image"+str(seq)+".jpg", crop_img)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         
 
