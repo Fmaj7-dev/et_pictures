@@ -2,6 +2,10 @@
 
 import sys
 from PySide6 import QtCore, QtWidgets, QtGui
+import hashlib
+import shutil
+
+import database
 
 class graphicsScene(QtWidgets.QGraphicsScene):
     def __init__ (self):
@@ -20,16 +24,22 @@ class textNode(QtWidgets.QTextEdit):
 
 
 class Tagger(QtWidgets.QWidget):
-    def __init__(self, image):
+    def __init__(self, image, output_dir, database_file):
         super().__init__()
+
+        database.connectToDatabase(database_file)
+        #database.createDatabase()
+        self.md5sum = hashlib.md5(open(image,'rb').read()).hexdigest()
+
+        shutil.copy(image, output_dir+'/'+self.md5sum+'.jpg')
 
         print("opening "+image)
         self.background = QtGui.QPixmap(image)
-        width = self.background.size().width()
-        height = self.background.size().height()
+        self.width = self.background.size().width()
+        self.height = self.background.size().height()
 
-        self.setMaximumWidth(width)
-        self.setMaximumHeight(height)
+        self.setMaximumWidth(self.width)
+        self.setMaximumHeight(self.height)
         
         # configure scene & view
         self.scene = graphicsScene()
@@ -45,14 +55,21 @@ class Tagger(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
         # resize
-        self.view.fitInView(QtCore.QRectF(0, 0, width/2, height/2), QtCore.Qt.KeepAspectRatio)
+        self.view.fitInView(QtCore.QRectF(0, 0, self.width/2, self.height/2), QtCore.Qt.KeepAspectRatio)
 
     def close(self):
-        print(self.text.toPlainText())
+        tags_string = self.text.toPlainText()
+        print(tags_string)
+
+        image_name = str(self.md5sum)+".jpg"
+        tags = {}
+        tags = set(tags_string.split(","))
+        database.updateImageTags(image_name, tags, self.width, self.height )
         sys.exit()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    myWidget = Tagger(sys.argv[1])
+    # create Tagger with file, output dir, and database file
+    myWidget = Tagger(sys.argv[1], sys.argv[2], sys.argv[3])
     myWidget.show()
     sys.exit(app.exec_())

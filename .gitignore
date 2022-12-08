@@ -25,3 +25,9 @@ yarn-error.log*
 # images
 images/
 frontend/images/
+
+# databases
+*.db
+
+# images
+*.jpg
